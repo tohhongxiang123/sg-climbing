@@ -1,24 +1,25 @@
 type Gym = {
     name: string,
+    address: {
+        name: string,
+        coordinates: [number, number],
+    },
     operatingHours: {
-        weekdays: {
-            open: string,
-            close: string,
-        },
-        weekends: {
-            open: string,
-            close: string,
-        },
-        publicHolidays: {
-            open: string,
-            close: string
-        }
+        monday: OperatingHour[],
+        tuesday: OperatingHour[],
+        wednesday: OperatingHour[],
+        thursday: OperatingHour[],
+        friday: OperatingHour[],
+        saturday: OperatingHour[],
+        sunday: OperatingHour[],
+        publicHolidays: OperatingHour[]
     },
     rates: {
         single: number,
-        youth: number,
+        youth?: number,
         multipass: MultipassRate[],
-        subscription: SubscriptionRate[]
+        subscription: SubscriptionRate[],
+        special: SpecialRate[]
     },
     rental: {
         shoes: number,
@@ -28,15 +29,29 @@ type Gym = {
 
 type MultipassRate = {
     quantity: number,
-    cost: number,
-    validity: number
+    price: number,
+    validity: number,
+    shareable: boolean,
+    terms?: string
 }
 
 type SubscriptionRate = {
     quantity: number,
-    cost: number,
+    price: number,
     initiationCost: number,
     freezeCost: number
+}
+
+type SpecialRate = {
+    name: string,
+    quantity: number,
+    price: number,
+    description?: string
+}
+
+type OperatingHour = {
+    open: string,
+    close: string
 }
 
 export default Gym
