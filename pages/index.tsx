@@ -1,5 +1,4 @@
 import type { InferGetStaticPropsType, NextPage } from 'next'
-import { useMemo } from 'react'
 import gyms from '../utils/gymDatabase'
 import { useTable } from 'react-table'
 import Gym from '../utils/Gym'
@@ -19,55 +18,72 @@ export const getStaticProps = async () => {
 				},
 				{
 					Header: 'Youth',
-					accessor: 'rates.youth'
+					accessor: 'youthpass'
 				}
 			]
 		},
+		{
+			Header: 'Multipass / $',
+			accessor: 'multipass'
+		},
+		{
+			Header: "Subscription / $",
+			columns: [
+				{
+					Header: "Initiation Cost",
+					accessor: 'subscription.initiationCost'
+				},
+				{
+					Header: "Freeze Cost",
+					accessor: 'subscription.freezeCost'
+				},
+				{
+					Header: "Price",
+					accessor: 'subscription.price'
+				},
+			],
+			accessor: "subscription"
+		},
+		{
+			Header: "Rental",
+			columns: [
+				{
+					Header: "Shoes",
+					accessor: "rental.shoes"
+				},
+				{
+					Header: "Socks",
+					accessor: "rental.socks"
+				},
+				{
+					Header: "Locker",
+					accessor: "rental.locker"
+				},
+				{
+					Header: "Harness",
+					accessor: "rental.harness"
+				},
+				{
+					Header: "Belay Device Kit",
+					accessor: "rental.belayDeviceKit"
+				}
+			]
+		}
 	]
 
-	let data : (Gym & { multipass: { [key: number]: number }})[] = JSON.parse(JSON.stringify(gyms))
+	let data: (Gym & { youthpass: string | null, multipass: string, subscription: { price: string | null, initiationCost: number | null, freezeCost: number | null } })[] = JSON.parse(JSON.stringify(gyms))
 
-	// get what columns to add to the table
-	let possibleMultipassQuantitiesSet = new Set<number>()
-	gyms.forEach(gym => {
-		const multipassQuantities = gym.rates.multipass.map(multipass => multipass.quantity)
-
-		if (multipassQuantities.length === 0) { // nothing to process
-			return
+	data = data.map(gym => ({
+		...gym,
+		youthpass: gym.rates.youth ? `${gym.rates.youth.price}${gym.rates.youth.terms ? `, ${gym.rates.youth.terms}` : ""}` : null,
+		multipass: gym.rates.multipass.map(({ quantity, price }) => `${quantity} x entry passes for $${price}`).join(", "),
+		subscription: {
+			initiationCost: gym.rates.subscription?.initiationCost ?? null,
+			freezeCost: gym.rates.subscription?.freezeCost ?? null,
+			price: gym.rates.subscription?.plans.map(({ quantity, price, terms }) => `${quantity < 0 ? 'Unlimited' : quantity} x entries monthly for $${price}` + (terms ? `, ${terms}` : "")).join(", ")
+				 ?? null
 		}
-
-		multipassQuantities.forEach(qty => possibleMultipassQuantitiesSet.add(qty))
-	})
-	let possibleMultipassQuantities = [...possibleMultipassQuantitiesSet] // convert set to array
-
-	// add columns to the table
-	columns.push({ 
-		Header: 'Multipass / $',
-		columns: possibleMultipassQuantities.map(quantity => ({ Header: `${quantity} x Entry Passes`, accessor: `multipass.${quantity}`}))
-	})
-
-	// set data within table
-	data.forEach(gym => {
-		gym.multipass = {} as { [key: number]: number }
-
-		possibleMultipassQuantities.forEach(multipassQuantity => {
-			const priceOfMultipassForGivenQuantity = gym.rates.multipass.find(multipass => multipass.quantity === multipassQuantity)?.price
-
-			if (!priceOfMultipassForGivenQuantity) {
-				return
-			}
-
-			gym.multipass[multipassQuantity] = priceOfMultipassForGivenQuantity
-		})
-	})
-
-	let subscriptionColumn = {
-		Header: 'Subscription',
-		columns: {
-			Header: "Initiation Fee",
-			accessor: ""
-		}
-	}
+	}))
 
 	return {
 		props: {

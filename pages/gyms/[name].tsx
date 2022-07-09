@@ -13,11 +13,14 @@ export default function GymPage({ gym }: InferGetStaticPropsType<typeof getStati
         )
     }
 
-    const url = `https://maps.google.com/maps?width=100%25&height=600&hl=en&q=+(${encodeURIComponent(gym.name)})&t=&z=17&ie=UTF8&iwloc=B&output=embed`
+    const mapUrl = `https://maps.google.com/maps?width=100%25&height=600&hl=en&q=+(${encodeURIComponent(gym.name)})&t=&z=17&ie=UTF8&iwloc=B&output=embed`
     return (
         <div className="p-4">
+            <Head>
+                <title>{gym.name}</title>
+            </Head>
             <section className="p-4 mb-4 border-b-2">
-                <h1 className="text-3xl font-medium">{gym.name}</h1>
+                <h1 className="text-3xl font-medium"><a href={gym.website} target="_blank" rel="noopener noreferrer" className="hover:underline">{gym.name}</a></h1>
                 <p className="opacity-70 font-semibold">{gym.address.name}</p>
             </section>
             <div className="flex flex-wrap justify-center">
@@ -38,7 +41,7 @@ export default function GymPage({ gym }: InferGetStaticPropsType<typeof getStati
                     <h2 className="text-xl font-bold">Rates</h2>
                     <ul>
                         <li>Single: ${gym.rates.single}</li>
-                        {gym.rates.youth && <li className="mb-4">Youth: ${gym.rates.youth}</li>}
+                        {gym.rates.youth && <li className="mb-4">Youth: ${gym.rates.youth.price}, {`<${gym.rates.youth.ageLimit} years old`}{gym.rates.youth.terms && `, ${gym.rates.youth.terms}`}</li>}
                         <li className="mb-4">
                             <p><strong>Multipass:</strong></p>
                             <div>
@@ -51,24 +54,26 @@ export default function GymPage({ gym }: InferGetStaticPropsType<typeof getStati
                                 ))}
                             </div>
                         </li>
-                        {gym.rates.subscription.length > 0 && <li>
-                            <p><strong>Subscription:</strong></p>
-                            <div>
-                                {gym.rates.subscription.map(subscription => (
-                                    <div className="mb-4">
-                                        <p>{subscription.quantity < 0 ? "Unlimited" : `${subscription.quantity} x`} Entry Passes at ${subscription.price}</p>
-                                        <p>Initiation fee: ${subscription.initiationCost}</p>
-                                        <p>Freezing fee: ${subscription.freezeCost}</p>
-                                    </div>
-                                ))}
-                            </div>
-                        </li>}
+                        {gym.rates.subscription != null && gym.rates.subscription.plans.length > 0 && (
+                            <li className="mb-4">
+                                <p><strong>Subscription:</strong></p>
+                                <div>
+                                    <p>Initiation fee: ${gym.rates.subscription.initiationCost}</p>
+                                    <p className="mb-2">Freezing fee: ${gym.rates.subscription.freezeCost}</p>
+                                    {gym.rates.subscription.plans.map(subscription => (
+                                        <div>
+                                            <p>{subscription.quantity < 0 ? "Unlimited" : `${subscription.quantity} x`} Entry Passes at ${subscription.price}{subscription.terms ? `, ${subscription.terms}` : ""}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </li>
+                        )}
                         {gym.rates.special.length > 0 && (
                             <li>
-                                <p><strong>Special</strong></p>
+                                <p className="mb-4"><strong>Special:</strong></p>
                                 {gym.rates.special.map(special => (
-                                    <div key={special.name}>
-                                        <p>{special.name}</p>
+                                    <div key={special.name} className="mb-4">
+                                        <p><strong>{special.name}</strong></p>
                                         <p>{special.quantity} x Entry Passes for ${special.price}</p>
                                         <p>{special.description}</p>
                                     </div>
@@ -78,7 +83,7 @@ export default function GymPage({ gym }: InferGetStaticPropsType<typeof getStati
                     </ul>
                 </section>
                 <section className="grow">
-                    <iframe width="100%" height="600" frameBorder="0" scrolling="no" marginHeight={0} marginWidth={0} src={url}></iframe>
+                    <iframe width="100%" height="600" frameBorder="0" scrolling="no" marginHeight={0} marginWidth={0} src={mapUrl}></iframe>
                 </section>
             </div>
         </div>

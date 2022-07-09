@@ -1,5 +1,6 @@
 type Gym = {
     name: string,
+    website: string,
     address: {
         name: string,
         coordinates: [number, number],
@@ -16,15 +17,26 @@ type Gym = {
     },
     rates: {
         single: number,
-        youth?: number,
+        youth?: YouthRate,
         multipass: MultipassRate[],
-        subscription: SubscriptionRate[],
-        special: SpecialRate[]
+        subscription: SubscriptionRate | null,
+        special: SpecialRate[],
+        membershipFee?: number,
+        registrationFree?: number,
     },
     rental: {
         shoes: number,
-        socks: number
+        socks?: number,
+        locker?: number,
+        harness?: number,
+        belayDeviceKit?: number
     }
+}
+
+type YouthRate = {
+    price: number,
+    ageLimit: number,
+    terms?: string | null
 }
 
 type MultipassRate = {
@@ -36,10 +48,9 @@ type MultipassRate = {
 }
 
 type SubscriptionRate = {
-    quantity: number,
-    price: number,
+    plans: { price: number, quantity: number, terms?: string }[],
     initiationCost: number,
-    freezeCost: number
+    freezeCost: number,
 }
 
 type SpecialRate = {
